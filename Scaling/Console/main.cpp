@@ -5,30 +5,16 @@
 #include <regex>
 #include <algorithm>
 #include <numeric>
+#include <fstream>
+#include <chrono>
 
-double scaleRangeExpanded(double lowestFrom, double highestFrom, double lowestTo, double highestTo, double value)
+template <class T>
+double scaleRange(T lowestFrom, T highestFrom, T lowestTo, T highestTo, T value)
 {
-	double toRange = highestTo / 2 - lowestTo / 2;
+	const auto HLF = [](T v){ return v / 2; };
 
-	double scaledLowestFrom = lowestFrom / 2;
-	double scaledHighestFrom = highestFrom / 2;
-	double scaledValue = value / 2;
-
-	double fromRange = scaledHighestFrom - scaledLowestFrom;
-	double valueScale = (scaledValue - scaledLowestFrom) / fromRange;
-	double scaledOffsetResult = (toRange * valueScale);
+	double scaledOffsetResult = ((HLF(highestTo) - HLF(lowestTo)) * ((HLF(value) - HLF(lowestFrom)) / (HLF(highestFrom) - HLF(lowestFrom))));
 	return scaledOffsetResult + lowestTo + scaledOffsetResult; //because toRange * valueScale * 2 overflows double max
-}
-
-double scaleRangeSimplified(double lowestFrom, double highestFrom, double lowestTo, double highestTo, double value)
-{
-	double toRange = highestTo / 2 - lowestTo / 2;
-
-	lowestFrom /= toRange;
-	highestFrom /= toRange;
-	value /= toRange;
-	double scaledOffsetResult = (toRange * (value - lowestFrom) / (highestFrom - lowestFrom));
-	return scaledOffsetResult + lowestTo + scaledOffsetResult;
 }
 
 int main()
@@ -36,13 +22,26 @@ int main()
 	double lowestFrom = std::numeric_limits<double>::lowest();
 	double highestFrom = std::numeric_limits<double>::max();
 
-	double lowestTo = 0;
-	double highestTo = 100;
+	double lowestTo = std::numeric_limits<double>::lowest();
+	double highestTo = std::numeric_limits<double>::max();
 
-	double value = 1000;
+	double value = 0;
 
-	auto result0 = scaleRangeExpanded(lowestFrom, highestFrom, lowestTo, highestTo, value);
-	auto result1 = scaleRangeSimplified(lowestFrom, highestFrom, lowestTo, highestTo, value);
+	std::ofstream log("log.txt");
+	size_t wrong = 0;
+
+	std::chrono::high_resolution_clock timer;
+	auto start = timer.now();
+	for (size_t i = 0; i < 100000000; ++i)
+	{
+		auto result0 = scaleRange(lowestFrom, highestFrom, lowestTo, highestTo, value+i);
+		if (result0 != value)
+			++wrong;
+	}
+	auto elapsed = timer.now() - start;
+	
+	log << "Time: " << elapsed.count() << "\n";
+	log << "Wrong: " << wrong;
 
 	return 0;
 }
