@@ -1,10 +1,5 @@
-// ConsoleApplication1.cpp : Defines the entry point for the console application.
-//
-
 #include <limits>
 
-
-//needs to handle different types for from and to
 template <class _fT, class _tT>
 _tT scaleRange(_fT value, _fT lowestFrom, _fT highestFrom, _tT lowestTo, _tT highestTo)
 {
