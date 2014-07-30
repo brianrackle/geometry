@@ -9,12 +9,15 @@
 #include <chrono>
 
 template <class T>
-double scaleRange(T lowestFrom, T highestFrom, T lowestTo, T highestTo, T value)
+T scaleRange(T lowestFrom, T highestFrom, T lowestTo, T highestTo, T value)
 {
-	const auto HLF = [](T v){ return v / 2; };
+	//scale by half to account for negative and positive range being too large to represent
+	const auto HLF = [](T v){ return v / 2; }; 
 
-	double scaledOffsetResult = ((HLF(highestTo) - HLF(lowestTo)) * ((HLF(value) - HLF(lowestFrom)) / (HLF(highestFrom) - HLF(lowestFrom))));
-	return scaledOffsetResult + lowestTo + scaledOffsetResult; //because toRange * valueScale * 2 overflows double max
+	double scaledOffsetResult = 
+		((HLF(highestTo) - HLF(lowestTo)) * ((HLF(value) - HLF(lowestFrom)) 
+		/ (HLF(highestFrom) - HLF(lowestFrom))));
+	return scaledOffsetResult + lowestTo + scaledOffsetResult; //seperated to prevent overflow
 }
 
 int main()
