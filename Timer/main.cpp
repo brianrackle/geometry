@@ -2,31 +2,20 @@
 
 namespace timing
 {
-	using namespace std::chrono;
-
-	template<class F>
-	system_clock::duration time_it(F && f)
+	template<class D, class F>
+	D time_it(F && f)
 	{
-		auto begin = high_resolution_clock::now();
+		using hrc = std::chrono::high_resolution_clock;
+
+		auto begin = hrc::now();
 		f();
-		auto end = high_resolution_clock::now();
-		return end - begin;
-	}
-
-	template<class T>
-	void time_as(T t, std::chrono)
-	{
-		//converts duration
-	}
-
-	template<class T>
-	void write_it(T && t)
-	{
-		//writes out duration to t
+		auto end = hrc::now();
+		return std::chrono::duration_cast<D>(end - begin);
 	}
 }
 
 int main()
 {
-
+	auto result = timing::time_it<std::chrono::seconds>
+		([]{ for (size_t i = 0; i < 100000 * 1000; ++i) std::pow(i, 2); });
 }
